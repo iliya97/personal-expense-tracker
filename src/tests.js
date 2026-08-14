@@ -65,30 +65,72 @@ function testDuplicateDetection() {
   Logger.log('Delete the test rows from the Transactions sheet when done.');
 }
 
-function testGrabParser() {
-  var threads = GmailApp.search('from:grab.com subject:"Your Grab E-Receipt"', 0, 1);
+function testGrabCarParser() {
+  var threads = GmailApp.search('from:grab.com subject:"Your Grab E-Receipt"', 0, 5);
   if (threads.length === 0) {
     Logger.log('No Grab emails found');
     return;
   }
 
-  var message = threads[0].getMessages()[0];
-  var body = message.getBody();
-  var result = parseGrab(body);
+  var found = false;
+  for (var i = 0; i < threads.length; i++) {
+    var message = threads[i].getMessages()[0];
+    var body = message.getBody();
+    if (/Vehicle type:[\s\S]*?GrabFood/.test(body)) continue;
 
-  if (!result) {
-    Logger.log('ERROR: Parser returned null — regex did not match');
+    var result = parseGrab(body);
+    if (!result) {
+      Logger.log('ERROR: GrabCar parser returned null — regex did not match');
+      return;
+    }
+
+    Logger.log('=== GrabCar Parser Result ===');
+    Logger.log('Date:     ' + result.date);
+    Logger.log('Merchant: ' + result.merchant);
+    Logger.log('Category: ' + result.category);
+    Logger.log('Amount:   RM ' + result.amount);
+    Logger.log('Paid by:  ' + result.paymentMethod);
+    Logger.log('Source:   ' + result.source);
+    Logger.log('=============================');
+    found = true;
+    break;
+  }
+
+  if (!found) Logger.log('No GrabCar emails found in recent threads');
+}
+
+function testGrabFoodParser() {
+  var threads = GmailApp.search('from:grab.com subject:"Your Grab E-Receipt"', 0, 5);
+  if (threads.length === 0) {
+    Logger.log('No Grab emails found');
     return;
   }
 
-  Logger.log('=== Grab Parser Result ===');
-  Logger.log('Date:     ' + result.date);
-  Logger.log('Merchant: ' + result.merchant);
-  Logger.log('Category: ' + result.category);
-  Logger.log('Amount:   RM ' + result.amount);
-  Logger.log('Paid by:  ' + result.paymentMethod);
-  Logger.log('Source:   ' + result.source);
-  Logger.log('==========================');
+  var found = false;
+  for (var i = 0; i < threads.length; i++) {
+    var message = threads[i].getMessages()[0];
+    var body = message.getBody();
+    if (!/Vehicle type:[\s\S]*?GrabFood/.test(body)) continue;
+
+    var result = parseGrab(body);
+    if (!result) {
+      Logger.log('ERROR: GrabFood parser returned null — regex did not match');
+      return;
+    }
+
+    Logger.log('=== GrabFood Parser Result ===');
+    Logger.log('Date:     ' + result.date);
+    Logger.log('Merchant: ' + result.merchant);
+    Logger.log('Category: ' + result.category);
+    Logger.log('Amount:   RM ' + result.amount);
+    Logger.log('Paid by:  ' + result.paymentMethod);
+    Logger.log('Source:   ' + result.source);
+    Logger.log('==============================');
+    found = true;
+    break;
+  }
+
+  if (!found) Logger.log('No GrabFood emails found in recent threads');
 }
 
 function testEndToEnd() {
