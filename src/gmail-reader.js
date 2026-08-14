@@ -1,6 +1,7 @@
 var PARSER_MAP = {
   'mail.foodpanda.my': parseFoodpanda,
-  'grab.com': parseGrab
+  'grab.com': parseGrab,
+  'service.atome.my': parseAtome
 };
 
 function routeParser(message) {
@@ -9,7 +10,7 @@ function routeParser(message) {
   for (var domain in PARSER_MAP) {
     if (from.indexOf(domain) !== -1) {
       var body = message.getBody();
-      return PARSER_MAP[domain](body);
+      return PARSER_MAP[domain](body, message);
     }
   }
 
