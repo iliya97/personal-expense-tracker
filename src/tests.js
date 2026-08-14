@@ -133,6 +133,33 @@ function testGrabFoodParser() {
   if (!found) Logger.log('No GrabFood emails found in recent threads');
 }
 
+function testAtomeParser() {
+  var threads = GmailApp.search('from:service.atome.my subject:"Transaction Confirmation"', 0, 1);
+  if (threads.length === 0) {
+    Logger.log('No Atome emails found');
+    return;
+  }
+
+  var message = threads[0].getMessages()[0];
+  var body = message.getBody();
+  var result = parseAtome(body, message);
+
+  if (!result) {
+    Logger.log('ERROR: Atome parser returned null — regex did not match');
+    return;
+  }
+
+  Logger.log('=== Atome Parser Result ===');
+  Logger.log('Date:        ' + result.date);
+  Logger.log('Merchant:    ' + result.merchant);
+  Logger.log('Category:    ' + result.category);
+  Logger.log('Amount:      RM ' + result.amount);
+  Logger.log('Description: ' + result.description);
+  Logger.log('Paid by:     ' + result.paymentMethod);
+  Logger.log('Source:      ' + result.source);
+  Logger.log('===========================');
+}
+
 function testEndToEnd() {
   Logger.log('=== End-to-End Test ===');
   Logger.log('Running processNewEmails() against live Gmail...');
